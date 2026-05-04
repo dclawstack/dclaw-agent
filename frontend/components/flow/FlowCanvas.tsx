@@ -57,7 +57,7 @@ export default function FlowCanvas({
       if (!type || !reactFlowWrapper.current || !reactFlowInstance.current) return;
 
       const bounds = reactFlowWrapper.current.getBoundingClientRect();
-      const position = reactFlowInstance.current.project({
+      const position = reactFlowInstance.current.screenToFlowPosition({
         x: event.clientX - bounds.left,
         y: event.clientY - bounds.top,
       });

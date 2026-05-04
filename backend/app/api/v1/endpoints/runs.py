@@ -8,11 +8,25 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import StreamingResponse
 
 from app.api.deps import get_session
-from app.models.agent import AgentDefinition, AgentRun, StepLog
+from app.core.database import AsyncSessionLocal
+from app.models.agent import AgentDefinition, AgentRun
 from app.schemas.agent import AgentRunCreate, AgentRunOut
 from app.services.execution import execute_agent
 
 router = APIRouter()
+
+
+async def run_in_background(run_id: UUID, agent_id: UUID) -> None:
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            select(AgentRun).where(AgentRun.id == run_id)
+        )
+        run = result.scalar_one()
+        result2 = await session.execute(
+            select(AgentDefinition).where(AgentDefinition.id == agent_id)
+        )
+        agent = result2.scalar_one()
+        await execute_agent(session, run, agent)
 
 
 @router.post("/{agent_id}/runs", response_model=AgentRunOut)
@@ -42,7 +56,7 @@ async def create_run(
         await execute_agent(session, run, agent)
         await session.refresh(run)
     else:
-        asyncio.create_task(execute_agent(session, run, agent))
+        asyncio.create_task(run_in_background(run.id, agent.id))
 
     return run
 

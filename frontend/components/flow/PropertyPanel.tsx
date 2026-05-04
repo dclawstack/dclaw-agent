@@ -27,12 +27,15 @@ export default function PropertyPanel({
   }
 
   function save() {
+    if (!selected) return;
     try {
       const parsed = JSON.parse(config);
       onChange({
-        ...selected,
+        id: selected.id,
+        type: selected.type,
+        position: selected.position,
         data: { ...selected.data, config: parsed },
-      });
+      } as Node);
     } catch {
       alert("Invalid JSON");
     }
