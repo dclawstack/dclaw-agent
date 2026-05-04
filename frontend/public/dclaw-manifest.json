@@ -1,0 +1,13 @@
+{
+  "app_id": "agent",
+  "name": "DClaw Agent",
+  "version": "0.1.0",
+  "category": "platform",
+  "icon": "/icons/agent.svg",
+  "color": "#8B5CF6",
+  "entrypoint": "/",
+  "api_base": "https://agent.dclawstack.io",
+  "permissions": ["read:agents", "write:agents", "read:runs", "write:runs", "read:marketplace"],
+  "requires_auth": true,
+  "billing_plan": "free"
+}
