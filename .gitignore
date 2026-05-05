@@ -13,3 +13,7 @@ frontend/out/
 # General
 .DS_Store
 *.log
+helm/*/Chart.lock
+helm/*/charts/
+backend/.venv/
+backend/*.db
