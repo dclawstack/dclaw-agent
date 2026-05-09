@@ -1,19 +1,16 @@
-# Backend
-backend/.venv/
-backend/__pycache__/
-backend/**/*.pyc
-backend/.env
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv/
+venv/
 
-# Frontend
-frontend/node_modules/
-frontend/.next/
-frontend/.env.local
-frontend/out/
+# Node
+node_modules/
+.next/
+dist/
 
-# General
-.DS_Store
-*.log
-helm/*/Chart.lock
-helm/*/charts/
-backend/.venv/
-backend/*.db
+# IDE
+.vscode/
+.idea/
