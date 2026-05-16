@@ -1,5 +1,8 @@
 # DClaw Agent — v1.2 Feature Roadmap
 
+> 📘 **REVISED PRD v2.3 available:** See `REVISED-PRD.md` for complete gap analysis, current state, and full feature roadmap.
+
+
 > Based on: Y Combinator vertical SaaS principles, trending GitHub repos (crewai, autogen, langgraph), AI product research (Relevance AI, Superagent, AgentGPT, MultiOn)
 
 ## Pre-Flight Checklist
