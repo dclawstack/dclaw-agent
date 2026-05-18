@@ -6,7 +6,7 @@ from sqlalchemy.pool import NullPool
 
 from app.main import app
 from app.core.database import get_db
-from app.models.base import Base
+from app.models.agent import Base
 
 TEST_DATABASE_URL = os.environ.get(
     "DATABASE_URL",
