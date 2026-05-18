@@ -12,6 +12,9 @@ export default function Home() {
         <Card href="/builder" title="Agent Builder" desc="Create agents on a visual canvas" />
         <Card href="/marketplace" title="Marketplace" desc="Discover public agents" />
         <Card href="/runs" title="Run History" desc="Review execution logs" />
+        <Card href="/tools" title="Tool Marketplace" desc="Browse and install tools for your agents" />
+        <Card href="/teams" title="Agent Teams" desc="Orchestrate multi-agent workflows in sequence" />
+        <Card href="/memory" title="Memory Inspector" desc="View, search, and manage long-term agent memories" />
       </div>
     </main>
   );
