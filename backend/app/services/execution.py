@@ -61,9 +61,27 @@ async def execute_node(
             response = await call_ollama(prompt, system)
             output = {"text": response}
         elif node_type == "tool":
-            output = await call_tool(config, inputs)
+            tool_slug = config.get("tool_slug")
+            if tool_slug:
+                from app.services.tool_registry import execute_builtin_tool
+                output = await execute_builtin_tool(tool_slug, inputs)
+            else:
+                output = await call_tool(config, inputs)
         elif node_type == "memory":
-            output = {"stored": True}
+            from app.services.memory import store_memory, retrieve_memories
+            action = config.get("action", "store")
+            scope = config.get("scope", "global")
+            if action == "retrieve":
+                query = inputs.get("query", config.get("query", ""))
+                top_k = int(config.get("top_k", 5))
+                memories = await retrieve_memories(session, scope, query, top_k)
+                output = {"memories": [{"key": m.key, "content": m.content, "importance": m.importance} for m in memories]}
+            else:  # store
+                key = inputs.get("key", config.get("key", f"memory_{step_number}"))
+                content = str(inputs.get("content", inputs.get("text", str(inputs))))
+                importance = float(config.get("importance", 0.5))
+                mem = await store_memory(session, scope, "episodic", key, content, importance)
+                output = {"stored": True, "memory_id": str(mem.id), "key": mem.key}
         elif node_type == "condition":
             expr = config.get("expression", "true")
             output = {"result": eval_condition(expr, inputs)}

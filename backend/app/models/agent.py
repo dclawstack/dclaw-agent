@@ -7,10 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-from app.core.database import engine
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
+from app.models.base import Base
 
 
 class AgentDefinition(Base):
