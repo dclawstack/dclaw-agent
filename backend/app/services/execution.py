@@ -116,8 +116,12 @@ async def call_tool(config: dict[str, Any], inputs: dict[str, Any]) -> dict[str,
 
 
 def eval_condition(expr: str, inputs: dict[str, Any]) -> bool:
+    from app.services.safe_expr import UnsafeConditionError, safe_eval
+
     try:
-        return bool(eval(expr, {"__builtins__": {}}, inputs))
+        return bool(safe_eval(expr, inputs))
+    except UnsafeConditionError:
+        raise
     except Exception:
         return False
 
