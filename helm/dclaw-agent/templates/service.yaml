@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "dclaw-app.fullname" . }}-frontend
+  name: {{ include "dclaw-agent.fullname" . }}-frontend
   labels:
-    {{- include "dclaw-app.labels" . | nindent 4 }}
+    {{- include "dclaw-agent.labels" . | nindent 4 }}
     component: frontend
 spec:
   type: {{ .Values.service.type }}
@@ -13,15 +13,15 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "dclaw-app.selectorLabels" . | nindent 4 }}
+    {{- include "dclaw-agent.selectorLabels" . | nindent 4 }}
     component: frontend
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "dclaw-app.fullname" . }}-backend
+  name: {{ include "dclaw-agent.fullname" . }}-backend
   labels:
-    {{- include "dclaw-app.labels" . | nindent 4 }}
+    {{- include "dclaw-agent.labels" . | nindent 4 }}
     component: backend
 spec:
   type: {{ .Values.service.type }}
@@ -31,5 +31,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "dclaw-app.selectorLabels" . | nindent 4 }}
+    {{- include "dclaw-agent.selectorLabels" . | nindent 4 }}
     component: backend

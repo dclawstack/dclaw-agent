@@ -2,6 +2,10 @@
 
 Build, share, and sell AI agents.
 
+## Code Manager
+
+- **Tharuni Dayara** — tharunidayara@gmail.com
+
 ## Stack
 
 - **Frontend:** Next.js 14+, React Flow, Tailwind CSS

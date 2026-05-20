@@ -13,7 +13,7 @@ from app.services.tool_registry import BUILTIN_TOOLS
 
 TEST_DATABASE_URL = os.environ.get(
     "DATABASE_URL",
-    "postgresql+asyncpg://postgres:postgres@localhost:5432/dclaw_app_test",
+    "postgresql+asyncpg://postgres:postgres@localhost:5432/dclaw_agent_test",
 )
 
 test_engine = create_async_engine(TEST_DATABASE_URL, poolclass=NullPool)

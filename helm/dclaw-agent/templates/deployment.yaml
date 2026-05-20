@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "dclaw-app.fullname" . }}-frontend
+  name: {{ include "dclaw-agent.fullname" . }}-frontend
   labels:
-    {{- include "dclaw-app.labels" . | nindent 4 }}
+    {{- include "dclaw-agent.labels" . | nindent 4 }}
     component: frontend
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "dclaw-app.selectorLabels" . | nindent 6 }}
+      {{- include "dclaw-agent.selectorLabels" . | nindent 6 }}
       component: frontend
   template:
     metadata:
       labels:
-        {{- include "dclaw-app.selectorLabels" . | nindent 8 }}
+        {{- include "dclaw-agent.selectorLabels" . | nindent 8 }}
         component: frontend
     spec:
-      serviceAccountName: {{ include "dclaw-app.serviceAccountName" . }}
+      serviceAccountName: {{ include "dclaw-agent.serviceAccountName" . }}
       containers:
         - name: frontend
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
@@ -31,23 +31,23 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "dclaw-app.fullname" . }}-backend
+  name: {{ include "dclaw-agent.fullname" . }}-backend
   labels:
-    {{- include "dclaw-app.labels" . | nindent 4 }}
+    {{- include "dclaw-agent.labels" . | nindent 4 }}
     component: backend
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "dclaw-app.selectorLabels" . | nindent 6 }}
+      {{- include "dclaw-agent.selectorLabels" . | nindent 6 }}
       component: backend
   template:
     metadata:
       labels:
-        {{- include "dclaw-app.selectorLabels" . | nindent 8 }}
+        {{- include "dclaw-agent.selectorLabels" . | nindent 8 }}
         component: backend
     spec:
-      serviceAccountName: {{ include "dclaw-app.serviceAccountName" . }}
+      serviceAccountName: {{ include "dclaw-agent.serviceAccountName" . }}
       containers:
         - name: backend
           image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"

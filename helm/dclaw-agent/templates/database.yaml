@@ -2,9 +2,9 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: {{ include "dclaw-app.fullname" . }}-db
+  name: {{ include "dclaw-agent.fullname" . }}-db
   labels:
-    {{- include "dclaw-app.labels" . | nindent 4 }}
+    {{- include "dclaw-agent.labels" . | nindent 4 }}
 spec:
   instances: {{ .Values.database.instances }}
   storage:
