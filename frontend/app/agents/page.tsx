@@ -29,8 +29,8 @@ export default function AgentsPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">My Agents</h1>
         <Link
-          href="/builder"
-          className="px-4 py-2 bg-brand text-white rounded-lg hover:opacity-90"
+          href="/agents/builder"
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
         >
           + New Agent
         </Link>
@@ -58,7 +58,7 @@ export default function AgentsPage() {
                   Run
                 </button>
                 <Link
-                  href={`/builder?agentId=${agent.id}`}
+                  href={`/agents/builder?agentId=${agent.id}`}
                   className="px-3 py-1.5 text-sm bg-gray-100 rounded hover:bg-gray-200"
                 >
                   Edit
