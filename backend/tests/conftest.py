@@ -1,12 +1,15 @@
 import os
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.pool import NullPool
 
 from app.main import app
 from app.core.database import get_db
 from app.models.agent import Base
+from app.models.tool import Tool
+from app.services.tool_registry import BUILTIN_TOOLS
 
 TEST_DATABASE_URL = os.environ.get(
     "DATABASE_URL",
@@ -32,6 +35,12 @@ async def setup_db():
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
+    async with AsyncSession(test_engine, expire_on_commit=False) as session:
+        for td in BUILTIN_TOOLS:
+            r = await session.execute(select(Tool).where(Tool.slug == td["slug"]))
+            if not r.scalar_one_or_none():
+                session.add(Tool(**td))
+        await session.commit()
     yield
     async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
