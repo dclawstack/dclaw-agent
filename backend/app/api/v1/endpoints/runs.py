@@ -12,6 +12,7 @@ from app.core.database import AsyncSessionLocal
 from app.models.agent import AgentDefinition, AgentRun
 from app.schemas.agent import AgentRunCreate, AgentRunOut, AgentRunSummary
 from app.services.execution import execute_agent
+from app.services.run_supervisor import supervisor
 
 router = APIRouter()
 
@@ -76,7 +77,7 @@ async def create_run(
         await execute_agent(session, run, agent)
         await session.refresh(run)
     else:
-        asyncio.create_task(run_in_background(run.id, agent.id))
+        supervisor.schedule(run.id, lambda: run_in_background(run.id, agent.id))
 
     return run
 
@@ -106,7 +107,8 @@ async def cancel_run(
     run = result.scalar_one_or_none()
     if not run:
         raise HTTPException(status_code=404, detail="Run not found")
-    if run.status == "running":
+    if run.status in {"running", "pending"}:
+        await supervisor.cancel(run.id)
         run.status = "cancelled"
         run.completed_at = datetime.now(timezone.utc)
         await session.commit()

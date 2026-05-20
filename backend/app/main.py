@@ -40,6 +40,8 @@ async def lifespan(app: FastAPI):
     log.info("app_ready")
     yield
     log.info("app_stopping")
+    from app.services.run_supervisor import supervisor
+    await supervisor.shutdown()
     await engine.dispose()
 
 

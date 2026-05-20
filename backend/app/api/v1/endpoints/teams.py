@@ -163,6 +163,10 @@ async def create_team_run(
         await execute_team(session, team_run, team)
         await session.refresh(team_run)
     else:
-        asyncio.create_task(run_team_in_background(team_run.id, team.id))
+        from app.services.run_supervisor import supervisor
+
+        supervisor.schedule(
+            team_run.id, lambda: run_team_in_background(team_run.id, team.id)
+        )
 
     return team_run
