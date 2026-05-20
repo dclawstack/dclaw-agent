@@ -2,10 +2,6 @@
 
 Build, share, and sell AI agents.
 
-## Code Manager
-
-- **Tharuni Dayara** — tharunidayara@gmail.com
-
 ## Stack
 
 - **Frontend:** Next.js 14+, React Flow, Tailwind CSS
@@ -60,6 +56,10 @@ The seed script creates a sample "Echo Agent" with Input → LLM → Output.
 cd backend
 python seed.py
 ```
+
+## Code Manager
+
+- **Tharuni Dayara** — tharunidayara@gmail.com
 
 ## License
 
