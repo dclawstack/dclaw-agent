@@ -11,6 +11,24 @@ from app.models.team import AgentTeam, TeamRun
 from app.services.execution import execute_agent
 
 
+def _merge_state(
+    accumulated: dict[str, Any],
+    step_output: dict[str, Any],
+    role: str,
+    order: int,
+) -> dict[str, Any]:
+    """Merge a step's output into the accumulated pipeline state.
+
+    Each step receives the full context of all previous outputs so agents
+    further down the pipeline (writer, reviewer, publisher) have access
+    to everything produced upstream.
+    """
+    merged = dict(accumulated)
+    merged.update(step_output)
+    merged[f"_step_{order}_{role.lower().replace(' ', '_')}"] = step_output
+    return merged
+
+
 async def execute_team(
     session: AsyncSession,
     team_run: TeamRun,
@@ -23,7 +41,9 @@ async def execute_team(
     sorted_steps: list[dict[str, Any]] = sorted(
         team.steps, key=lambda s: s["order"]
     )
-    current_input: dict[str, Any] = dict(team_run.input)
+
+    # Accumulated pipeline state: each step receives the merged outputs of all prior steps.
+    pipeline_state: dict[str, Any] = dict(team_run.input)
     logs: list[dict[str, Any]] = list(team_run.logs or [])
     step_outputs: dict[str, Any] = dict(team_run.step_outputs or {})
     failed = False
@@ -34,6 +54,7 @@ async def execute_team(
         order = step.get("order", 0)
         system_prompt_override = step.get("system_prompt")
 
+        step_start = time.time()
         logs.append(
             {
                 "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -44,7 +65,7 @@ async def execute_team(
         team_run.logs = list(logs)
         await session.commit()
 
-        # Look up AgentDefinition
+        # Validate agent_id
         try:
             agent_uuid = uuid.UUID(agent_id_str)
         except (ValueError, AttributeError):
@@ -61,6 +82,7 @@ async def execute_team(
                 "output": {},
                 "status": "failed",
                 "error": "Invalid agent_id format",
+                "duration_ms": int((time.time() - step_start) * 1000),
             }
             team_run.logs = list(logs)
             team_run.step_outputs = dict(step_outputs)
@@ -87,6 +109,7 @@ async def execute_team(
                 "output": {},
                 "status": "failed",
                 "error": "Agent not found",
+                "duration_ms": int((time.time() - step_start) * 1000),
             }
             team_run.logs = list(logs)
             team_run.step_outputs = dict(step_outputs)
@@ -105,18 +128,18 @@ async def execute_team(
                     break
             agent_def.nodes = patched_nodes
 
-        # Create AgentRun for this step
+        # Pass the full accumulated pipeline state as input so each agent
+        # has context from all prior steps.
         agent_run = AgentRun(
             agent_id=agent_def.id,
             agent_version=agent_def.version,
             status="pending",
-            input=current_input,
+            input=pipeline_state,
         )
         session.add(agent_run)
         await session.commit()
         await session.refresh(agent_run)
 
-        # Execute the agent
         await execute_agent(session, agent_run, agent_def)
         await session.refresh(agent_run)
 
@@ -125,18 +148,22 @@ async def execute_team(
             agent_def.nodes = original_nodes
             await session.commit()
 
+        step_duration_ms = int((time.time() - step_start) * 1000)
+        step_output = agent_run.output or {}
+
         step_outputs[str(order)] = {
             "agent_id": agent_id_str,
             "role": role,
-            "output": agent_run.output or {},
+            "output": step_output,
             "status": agent_run.status,
+            "duration_ms": step_duration_ms,
         }
 
         logs.append(
             {
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "role": role,
-                "message": f"{role} completed with status {agent_run.status}",
+                "message": f"{role} completed in {step_duration_ms}ms with status {agent_run.status}",
             }
         )
         team_run.logs = list(logs)
@@ -156,9 +183,10 @@ async def execute_team(
             failed = True
             break
 
-        current_input = agent_run.output or {}
+        # Merge this step's output into the accumulated pipeline state
+        pipeline_state = _merge_state(pipeline_state, step_output, role, order)
 
-    team_run.output = current_input
+    team_run.output = pipeline_state
     team_run.status = "failed" if failed else "completed"
     team_run.completed_at = datetime.now(timezone.utc)
     team_run.duration_ms = int((time.time() - start) * 1000)

@@ -52,6 +52,19 @@ async def list_teams(
     return list(result.scalars().all())
 
 
+@router.get("/{team_id}/runs", response_model=list[TeamRunOut])
+async def list_team_runs(
+    team_id: UUID,
+    session: AsyncSession = Depends(get_session),
+) -> list[TeamRun]:
+    result = await session.execute(
+        select(TeamRun)
+        .where(TeamRun.team_id == team_id)
+        .order_by(TeamRun.created_at.desc())
+    )
+    return list(result.scalars().all())
+
+
 @router.get("/runs/{run_id}", response_model=TeamRunOut)
 async def get_team_run(
     run_id: UUID,
