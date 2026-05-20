@@ -5,6 +5,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_session
+from app.api.v1.endpoints.auth import get_current_user
+from app.models.user import User
 from app.models.tool import Tool
 from app.schemas.tool import ToolExecuteRequest, ToolOut
 from app.services.tool_registry import execute_builtin_tool
@@ -15,6 +17,7 @@ router = APIRouter()
 @router.get("", response_model=list[ToolOut])
 async def list_tools(
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> list[Tool]:
     result = await session.execute(select(Tool))
     return list(result.scalars().all())
@@ -24,6 +27,7 @@ async def list_tools(
 async def get_tool(
     slug: str,
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> Tool:
     result = await session.execute(select(Tool).where(Tool.slug == slug))
     tool = result.scalar_one_or_none()
@@ -36,6 +40,7 @@ async def get_tool(
 async def install_tool(
     slug: str,
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> Tool:
     result = await session.execute(select(Tool).where(Tool.slug == slug))
     tool = result.scalar_one_or_none()
@@ -51,6 +56,7 @@ async def install_tool(
 async def uninstall_tool(
     slug: str,
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> None:
     result = await session.execute(select(Tool).where(Tool.slug == slug))
     tool = result.scalar_one_or_none()
@@ -65,6 +71,7 @@ async def execute_tool(
     slug: str,
     payload: ToolExecuteRequest,
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> dict[str, Any]:
     result = await session.execute(select(Tool).where(Tool.slug == slug))
     tool = result.scalar_one_or_none()

@@ -1,19 +1,19 @@
 import uuid
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_session
+from app.api.v1.endpoints.auth import get_current_user
 from app.models.agent import AgentDefinition
 from app.models.marketplace_install import MarketplaceInstall
+from app.models.user import User
 from app.schemas.agent import MarketplaceAgentOut
 
 router = APIRouter()
-
-ANONYMOUS_INSTALLER = uuid.UUID("00000000-0000-0000-0000-000000000001")
 
 
 def _short_owner_name(owner_id: uuid.UUID) -> str:
@@ -67,8 +67,8 @@ async def list_marketplace(
 @router.post("/{agent_id}/install")
 async def install_agent(
     agent_id: UUID,
-    installer_id: UUID | None = Body(default=None, embed=True),
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> dict:
     result = await session.execute(
         select(AgentDefinition).where(
@@ -79,16 +79,13 @@ async def install_agent(
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
 
-    install = MarketplaceInstall(
-        agent_id=agent_id,
-        installer_id=installer_id or ANONYMOUS_INSTALLER,
-    )
+    install = MarketplaceInstall(agent_id=agent_id, installer_id=current.id)
     session.add(install)
     try:
         await session.commit()
     except IntegrityError:
         await session.rollback()
-        # already installed by this installer — idempotent
+        # already installed by this user — idempotent
     count_row = await session.execute(
         select(func.count(MarketplaceInstall.id)).where(
             MarketplaceInstall.agent_id == agent_id
@@ -104,14 +101,13 @@ async def install_agent(
 @router.delete("/{agent_id}/install", status_code=204)
 async def uninstall_agent(
     agent_id: UUID,
-    installer_id: UUID | None = None,
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> None:
-    target_installer = installer_id or ANONYMOUS_INSTALLER
     await session.execute(
         delete(MarketplaceInstall).where(
             MarketplaceInstall.agent_id == agent_id,
-            MarketplaceInstall.installer_id == target_installer,
+            MarketplaceInstall.installer_id == current.id,
         )
     )
     await session.commit()

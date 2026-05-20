@@ -17,6 +17,8 @@ const NAV = [
   { href: "/memory", label: "Memory" },
 ];
 
+const PUBLIC_PATHS = new Set(["/", "/login", "/register", "/marketplace"]);
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -30,6 +32,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (user) return;
+    if (PUBLIC_PATHS.has(pathname)) return;
+    router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+  }, [mounted, user, pathname, router]);
 
   const handleLogout = () => {
     logout();

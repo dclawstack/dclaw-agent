@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { register } from "@/lib/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const params = useSearchParams();
+  const next = params.get("next") || "/";
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
@@ -20,7 +22,7 @@ export default function RegisterPage() {
     setBusy(true);
     try {
       await register(email, password, displayName);
-      router.push("/");
+      router.push(next);
     } catch (err) {
       setError((err as Error).message);
     } finally {

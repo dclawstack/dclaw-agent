@@ -1,14 +1,40 @@
 const BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
+function authHeader(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  const token = localStorage.getItem("dclaw_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+function handle401() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("dclaw_token");
+  localStorage.removeItem("dclaw_user");
+  const here = window.location.pathname;
+  if (!here.startsWith("/login") && !here.startsWith("/register")) {
+    window.location.href = `/login?next=${encodeURIComponent(here)}`;
+  }
+}
+
 async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(),
+      ...(options?.headers || {}),
+    },
   });
+  if (res.status === 401) {
+    handle401();
+    throw new Error("Unauthorized");
+  }
   if (!res.ok) {
     const err = await res.text();
     throw new Error(err);
   }
+  // 204 No Content
+  if (res.status === 204) return undefined as unknown as T;
   return res.json() as Promise<T>;
 }
 
@@ -151,10 +177,7 @@ export async function installTool(slug: string): Promise<Tool> {
 }
 
 export async function uninstallTool(slug: string): Promise<void> {
-  await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/v1/agent/tools/${slug}/install`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-  });
+  await fetchJson<void>(`/api/v1/agent/tools/${slug}/install`, { method: "DELETE" });
 }
 
 export async function executeTool(
@@ -291,10 +314,7 @@ export async function updateMemory(
 }
 
 export async function deleteMemory(id: string): Promise<void> {
-  await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/v1/agent/memories/${id}`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-  });
+  await fetchJson<void>(`/api/v1/agent/memories/${id}`, { method: "DELETE" });
 }
 
 export async function retrieveMemories(payload: {

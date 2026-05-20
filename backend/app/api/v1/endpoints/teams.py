@@ -6,8 +6,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_session
+from app.api.v1.endpoints.auth import get_current_user
 from app.core.database import AsyncSessionLocal
 from app.models.team import AgentTeam, TeamRun
+from app.models.user import User
 from app.schemas.team import AgentTeamOut, TeamCreate, TeamRunCreate, TeamRunOut, TeamUpdate
 from app.services.multi_agent import execute_team
 
@@ -31,6 +33,7 @@ async def run_team_in_background(run_id: UUID, team_id: UUID) -> None:
 async def create_team(
     payload: TeamCreate,
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> AgentTeam:
     team = AgentTeam(
         name=payload.name,
@@ -47,6 +50,7 @@ async def create_team(
 @router.get("", response_model=list[AgentTeamOut])
 async def list_teams(
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> list[AgentTeam]:
     result = await session.execute(select(AgentTeam))
     return list(result.scalars().all())
@@ -56,6 +60,7 @@ async def list_teams(
 async def list_team_runs(
     team_id: UUID,
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> list[TeamRun]:
     result = await session.execute(
         select(TeamRun)
@@ -69,6 +74,7 @@ async def list_team_runs(
 async def get_team_run(
     run_id: UUID,
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> TeamRun:
     result = await session.execute(
         select(TeamRun).where(TeamRun.id == run_id)
@@ -83,6 +89,7 @@ async def get_team_run(
 async def get_team(
     team_id: UUID,
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> AgentTeam:
     result = await session.execute(
         select(AgentTeam).where(AgentTeam.id == team_id)
@@ -98,6 +105,7 @@ async def update_team(
     team_id: UUID,
     payload: TeamUpdate,
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> AgentTeam:
     result = await session.execute(
         select(AgentTeam).where(AgentTeam.id == team_id)
@@ -124,6 +132,7 @@ async def update_team(
 async def delete_team(
     team_id: UUID,
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> None:
     result = await session.execute(
         select(AgentTeam).where(AgentTeam.id == team_id)
@@ -140,6 +149,7 @@ async def create_team_run(
     team_id: UUID,
     payload: TeamRunCreate,
     session: AsyncSession = Depends(get_session),
+    current: User = Depends(get_current_user),
 ) -> TeamRun:
     result = await session.execute(
         select(AgentTeam).where(AgentTeam.id == team_id)

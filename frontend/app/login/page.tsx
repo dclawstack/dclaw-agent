@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { login } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const params = useSearchParams();
+  const next = params.get("next") || "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +21,7 @@ export default function LoginPage() {
     setBusy(true);
     try {
       await login(email, password);
-      router.push("/");
+      router.push(next);
     } catch (err) {
       setError((err as Error).message);
     } finally {
