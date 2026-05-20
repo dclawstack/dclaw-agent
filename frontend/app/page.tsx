@@ -15,6 +15,7 @@ export default function Home() {
         <Card href="/tools" title="Tool Marketplace" desc="Browse and install tools for your agents" />
         <Card href="/teams" title="Agent Teams" desc="Orchestrate multi-agent workflows in sequence" />
         <Card href="/memory" title="Memory Inspector" desc="View, search, and manage long-term agent memories" />
+        <Card href="/tasks" title="Scheduled Tasks" desc="Run agents autonomously on a schedule with execution history" />
       </div>
     </main>
   );

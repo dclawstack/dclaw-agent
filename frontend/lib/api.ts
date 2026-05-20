@@ -282,3 +282,107 @@ export async function retrieveMemories(payload: {
     body: JSON.stringify(payload),
   });
 }
+
+// ─── Scheduled Tasks ────────────────────────────────────────────────────────
+
+export type ScheduledRun = {
+  id: string;
+  scheduled_task_id: string;
+  agent_run_id: string | null;
+  status: "pending" | "running" | "completed" | "failed" | "skipped";
+  attempt_number: number;
+  error_message: string | null;
+  scheduled_at: string;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+};
+
+export type ScheduledTask = {
+  id: string;
+  agent_id: string;
+  name: string;
+  description: string | null;
+  schedule_type: "cron" | "interval" | "once";
+  cron_expr: string | null;
+  interval_seconds: number | null;
+  input_data: Record<string, unknown>;
+  max_retries: number;
+  retry_delay_seconds: number;
+  is_active: boolean;
+  last_run_at: string | null;
+  next_run_at: string | null;
+  created_at: string;
+  updated_at: string;
+  scheduled_runs: ScheduledRun[];
+};
+
+export async function listScheduledTasks(): Promise<ScheduledTask[]> {
+  return fetchJson<ScheduledTask[]>("/api/v1/agent/scheduled-tasks/");
+}
+
+export async function getScheduledTask(id: string): Promise<ScheduledTask> {
+  return fetchJson<ScheduledTask>(`/api/v1/agent/scheduled-tasks/${id}`);
+}
+
+export async function createScheduledTask(payload: {
+  agent_id: string;
+  name: string;
+  description?: string;
+  schedule_type: "cron" | "interval" | "once";
+  cron_expr?: string;
+  interval_seconds?: number;
+  input_data?: Record<string, unknown>;
+  max_retries?: number;
+  retry_delay_seconds?: number;
+}): Promise<ScheduledTask> {
+  return fetchJson<ScheduledTask>("/api/v1/agent/scheduled-tasks/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateScheduledTask(
+  id: string,
+  payload: Partial<{
+    name: string;
+    description: string;
+    cron_expr: string;
+    interval_seconds: number;
+    input_data: Record<string, unknown>;
+    max_retries: number;
+    retry_delay_seconds: number;
+    is_active: boolean;
+  }>
+): Promise<ScheduledTask> {
+  return fetchJson<ScheduledTask>(`/api/v1/agent/scheduled-tasks/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteScheduledTask(id: string): Promise<void> {
+  await fetchJson<void>(`/api/v1/agent/scheduled-tasks/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export async function pauseScheduledTask(id: string): Promise<ScheduledTask> {
+  return fetchJson<ScheduledTask>(
+    `/api/v1/agent/scheduled-tasks/${id}/pause`,
+    { method: "POST" }
+  );
+}
+
+export async function resumeScheduledTask(id: string): Promise<ScheduledTask> {
+  return fetchJson<ScheduledTask>(
+    `/api/v1/agent/scheduled-tasks/${id}/resume`,
+    { method: "POST" }
+  );
+}
+
+export async function listScheduledRuns(taskId: string): Promise<ScheduledRun[]> {
+  return fetchJson<ScheduledRun[]>(
+    `/api/v1/agent/scheduled-tasks/${taskId}/runs`
+  );
+}

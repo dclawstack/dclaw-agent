@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -9,6 +10,7 @@ from app.models.agent import Base
 from app.models.tool import Tool  # noqa: F401 — registers Tool with Base metadata
 from app.models.team import AgentTeam, TeamRun  # noqa: F401 — registers team models with Base metadata
 from app.models.memory import Memory  # noqa: F401 — registers Memory with Base metadata
+from app.models.schedule import ScheduledTask, ScheduledRun  # noqa: F401 — registers schedule models with Base metadata
 
 
 async def _seed_tools() -> None:
@@ -28,7 +30,10 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     await _seed_tools()
+    from app.services.task_scheduler import run_scheduler_loop
+    scheduler_task = asyncio.create_task(run_scheduler_loop())
     yield
+    scheduler_task.cancel()
     await engine.dispose()
 
 
