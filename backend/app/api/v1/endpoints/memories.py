@@ -58,6 +58,7 @@ async def get_session_memories_endpoint(
     return await get_session_memories(session, scope, session_id)
 
 
+@router.get("", response_model=list[MemoryOut])
 @router.get("/", response_model=list[MemoryOut])
 async def list_memories(
     scope: str = "global",
@@ -71,6 +72,7 @@ async def list_memories(
     return list(result.scalars().all())
 
 
+@router.post("", response_model=MemoryOut, status_code=status.HTTP_201_CREATED)
 @router.post("/", response_model=MemoryOut, status_code=status.HTTP_201_CREATED)
 async def create_memory(
     payload: MemoryCreate,

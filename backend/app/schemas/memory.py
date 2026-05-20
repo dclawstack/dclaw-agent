@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 
 class MemoryCreate(BaseModel):
@@ -36,7 +36,10 @@ class MemoryOut(BaseModel):
     memory_type: str
     key: str
     content: str
-    metadata_: dict[str, Any] = Field(alias="metadata")
+    metadata_: dict[str, Any] = Field(
+        validation_alias=AliasChoices("metadata_", "metadata"),
+        serialization_alias="metadata",
+    )
     importance: float
     access_count: int
     last_accessed_at: datetime | None
