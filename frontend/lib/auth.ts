@@ -37,6 +37,7 @@ export function getStoredUser(): User | null {
 function storeAuth(resp: AuthResponse) {
   localStorage.setItem(TOKEN_KEY, resp.access_token);
   localStorage.setItem(USER_KEY, JSON.stringify(resp.user));
+  window.dispatchEvent(new Event("dclaw-auth-changed"));
 }
 
 export async function login(email: string, password: string): Promise<User> {
@@ -70,4 +71,5 @@ export async function register(
 export function logout() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  window.dispatchEvent(new Event("dclaw-auth-changed"));
 }

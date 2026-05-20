@@ -29,9 +29,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setMounted(true);
     setUser(getStoredUser());
     const onStorage = () => setUser(getStoredUser());
+    const onAuthChanged = () => setUser(getStoredUser());
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    window.addEventListener("dclaw-auth-changed", onAuthChanged);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("dclaw-auth-changed", onAuthChanged);
+    };
   }, []);
+
+  // Re-read storage on every route change too: the `storage` DOM event only
+  // fires for other tabs, so navigating after login would otherwise see the
+  // stale `user` state and bounce us straight back to /login.
+  useEffect(() => {
+    if (mounted) setUser(getStoredUser());
+  }, [pathname, mounted]);
 
   useEffect(() => {
     if (!mounted) return;
