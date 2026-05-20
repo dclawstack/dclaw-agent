@@ -1,17 +1,17 @@
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Boolean, DateTime, JSON, String, Text
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 from app.models.base import Base
+from app.models.types import GUID
 
 
 class Tool(Base):
     __tablename__ = "tools"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        GUID(), primary_key=True, default=uuid.uuid4
     )
     slug: Mapped[str] = mapped_column(
         String(100), unique=True, nullable=False, index=True

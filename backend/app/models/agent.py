@@ -3,22 +3,22 @@ from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text, Boolean
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.models.base import Base
+from app.models.types import GUID
 
 
 class AgentDefinition(Base):
     __tablename__ = "agent_definitions"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        GUID(), primary_key=True, default=uuid.uuid4
     )
     name: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    owner_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    owner_id: Mapped[uuid.UUID] = mapped_column(GUID(), nullable=False)
     nodes: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     edges: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     entry_node_id: Mapped[str] = mapped_column(Text, nullable=False)
@@ -45,7 +45,7 @@ class AgentRun(Base):
     __tablename__ = "agent_runs"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        GUID(), primary_key=True, default=uuid.uuid4
     )
     agent_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("agent_definitions.id"), nullable=False
@@ -78,7 +78,7 @@ class StepLog(Base):
     __tablename__ = "step_logs"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        GUID(), primary_key=True, default=uuid.uuid4
     )
     run_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("agent_runs.id", ondelete="CASCADE"), nullable=False

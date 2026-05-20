@@ -3,18 +3,18 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy import DateTime, Float, Index, Integer, JSON, String, Text
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
 from app.models.base import Base
+from app.models.types import GUID
 
 
 class Memory(Base):
     __tablename__ = "memories"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        GUID(), primary_key=True, default=uuid.uuid4
     )
     scope: Mapped[str] = mapped_column(String(200), nullable=False)
     memory_type: Mapped[str] = mapped_column(String(20), nullable=False)
