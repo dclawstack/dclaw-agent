@@ -215,6 +215,10 @@ export async function getTeamRun(runId: string): Promise<TeamRun> {
   return fetchJson<TeamRun>(`/api/v1/agent/teams/runs/${runId}`);
 }
 
+export async function listTeamRuns(teamId: string): Promise<TeamRun[]> {
+  return fetchJson<TeamRun[]>(`/api/v1/agent/teams/${teamId}/runs`);
+}
+
 export type Memory = {
   id: string;
   scope: string;
