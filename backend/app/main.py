@@ -14,6 +14,7 @@ from app.models.agent import Base
 from app.models.tool import Tool  # noqa: F401 — registers Tool with Base metadata
 from app.models.team import AgentTeam, TeamRun  # noqa: F401 — registers team models with Base metadata
 from app.models.memory import Memory  # noqa: F401 — registers Memory with Base metadata
+from app.models.marketplace_install import MarketplaceInstall  # noqa: F401
 
 configure_logging()
 log = get_logger(__name__)
