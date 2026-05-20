@@ -44,3 +44,30 @@ class MemoryOut(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
+class MemoryLearnRequest(BaseModel):
+    scope: str = "global"
+    text: str
+    session_id: str | None = None
+
+
+class MemoryLearnResponse(BaseModel):
+    learned: list[MemoryOut]
+    count: int
+
+
+class MemoryStatsOut(BaseModel):
+    total: int
+    by_type: dict[str, int]
+    avg_importance: float
+
+
+class MemoryConsolidateRequest(BaseModel):
+    scope: str = "global"
+    max_to_keep: int = Field(default=100, ge=1)
+
+
+class MemoryConsolidateResponse(BaseModel):
+    deleted: int
+    remaining: int
