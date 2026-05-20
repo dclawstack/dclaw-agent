@@ -282,3 +282,60 @@ export async function retrieveMemories(payload: {
     body: JSON.stringify(payload),
   });
 }
+
+export type MemoryStats = {
+  total: number;
+  by_type: Record<string, number>;
+  avg_importance: number;
+};
+
+export async function getMemoryStats(scope?: string): Promise<MemoryStats> {
+  const params = scope ? `?scope=${encodeURIComponent(scope)}` : "";
+  return fetchJson<MemoryStats>(`/api/v1/agent/memories/stats${params}`);
+}
+
+export async function listEpisodicSessions(scope?: string): Promise<string[]> {
+  const params = scope ? `?scope=${encodeURIComponent(scope)}` : "";
+  return fetchJson<string[]>(`/api/v1/agent/memories/sessions${params}`);
+}
+
+export async function getSessionMemories(
+  sessionId: string,
+  scope?: string
+): Promise<Memory[]> {
+  const params = scope ? `?scope=${encodeURIComponent(scope)}` : "";
+  return fetchJson<Memory[]>(
+    `/api/v1/agent/memories/sessions/${encodeURIComponent(sessionId)}${params}`
+  );
+}
+
+export type LearnPreferencesResponse = {
+  learned: Memory[];
+  count: number;
+};
+
+export async function learnPreferences(payload: {
+  scope?: string;
+  text: string;
+  session_id?: string;
+}): Promise<LearnPreferencesResponse> {
+  return fetchJson<LearnPreferencesResponse>("/api/v1/agent/memories/learn", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export type ConsolidateResponse = {
+  deleted: number;
+  remaining: number;
+};
+
+export async function consolidateMemories(payload: {
+  scope?: string;
+  max_to_keep?: number;
+}): Promise<ConsolidateResponse> {
+  return fetchJson<ConsolidateResponse>("/api/v1/agent/memories/consolidate", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}

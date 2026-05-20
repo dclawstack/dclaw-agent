@@ -7,10 +7,55 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_session
 from app.models.memory import Memory
-from app.schemas.memory import MemoryCreate, MemoryOut, MemoryRetrieveRequest, MemoryUpdate
-from app.services.memory import delete_memory, retrieve_memories, store_memory, update_memory
+from app.schemas.memory import (
+    MemoryConsolidateRequest,
+    MemoryConsolidateResponse,
+    MemoryCreate,
+    MemoryLearnRequest,
+    MemoryLearnResponse,
+    MemoryOut,
+    MemoryRetrieveRequest,
+    MemoryStatsOut,
+    MemoryUpdate,
+)
+from app.services.memory import (
+    consolidate_memories,
+    delete_memory,
+    get_session_memories,
+    learn_preferences_from_text,
+    list_episodic_sessions,
+    memory_stats,
+    retrieve_memories,
+    store_memory,
+    update_memory,
+)
 
 router = APIRouter()
+
+
+@router.get("/stats", response_model=MemoryStatsOut)
+async def get_memory_stats(
+    scope: str = "global",
+    session: AsyncSession = Depends(get_session),
+) -> Any:
+    return await memory_stats(session, scope)
+
+
+@router.get("/sessions", response_model=list[str])
+async def get_episodic_sessions(
+    scope: str = "global",
+    session: AsyncSession = Depends(get_session),
+) -> list[str]:
+    return await list_episodic_sessions(session, scope)
+
+
+@router.get("/sessions/{session_id}", response_model=list[MemoryOut])
+async def get_session_memories_endpoint(
+    session_id: str,
+    scope: str = "global",
+    session: AsyncSession = Depends(get_session),
+) -> list[Memory]:
+    return await get_session_memories(session, scope, session_id)
 
 
 @router.get("/", response_model=list[MemoryOut])
@@ -31,7 +76,7 @@ async def create_memory(
     payload: MemoryCreate,
     session: AsyncSession = Depends(get_session),
 ) -> Memory:
-    mem = await store_memory(
+    return await store_memory(
         session=session,
         scope=payload.scope,
         memory_type=payload.memory_type,
@@ -40,7 +85,6 @@ async def create_memory(
         importance=payload.importance,
         metadata=payload.metadata_,
     )
-    return mem
 
 
 # NOTE: /retrieve must be placed BEFORE /{memory_id} to avoid route shadowing
@@ -50,6 +94,25 @@ async def retrieve_memories_endpoint(
     session: AsyncSession = Depends(get_session),
 ) -> list[Memory]:
     return await retrieve_memories(session, payload.scope, payload.query, payload.top_k)
+
+
+@router.post("/learn", response_model=MemoryLearnResponse)
+async def learn_preferences_endpoint(
+    payload: MemoryLearnRequest,
+    session: AsyncSession = Depends(get_session),
+) -> Any:
+    learned = await learn_preferences_from_text(
+        session, payload.scope, payload.text, payload.session_id
+    )
+    return {"learned": learned, "count": len(learned)}
+
+
+@router.post("/consolidate", response_model=MemoryConsolidateResponse)
+async def consolidate_memories_endpoint(
+    payload: MemoryConsolidateRequest,
+    session: AsyncSession = Depends(get_session),
+) -> Any:
+    return await consolidate_memories(session, payload.scope, payload.max_to_keep)
 
 
 @router.get("/{memory_id}", response_model=MemoryOut)
