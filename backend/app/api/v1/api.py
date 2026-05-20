@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import agents, marketplace, memories, runs, teams, tools
+from app.api.v1.endpoints import agents, auth, marketplace, memories, runs, teams, tools
 
 router = APIRouter(prefix="/api/v1/agent")
+router.include_router(auth.router, prefix="/auth", tags=["auth"])
 router.include_router(agents.router, prefix="/agents", tags=["agents"])
 router.include_router(runs.router, prefix="/runs", tags=["runs"])
 router.include_router(
