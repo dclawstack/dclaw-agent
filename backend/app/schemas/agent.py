@@ -95,6 +95,20 @@ class AgentRunOut(BaseModel):
     steps: list[StepLogOut] | None = None
 
 
+class AgentRunSummary(BaseModel):
+    """Lightweight row for the runs-list page (no nested steps)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    agent_id: UUID
+    status: Literal["pending", "running", "completed", "failed", "cancelled"]
+    started_at: datetime
+    completed_at: datetime | None
+    duration_ms: int | None
+    step_count: int
+
+
 class MarketplaceAgentOut(BaseModel):
     id: UUID
     name: str

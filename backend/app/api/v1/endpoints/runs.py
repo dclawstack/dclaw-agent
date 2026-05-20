@@ -10,10 +10,30 @@ from starlette.responses import StreamingResponse
 from app.api.deps import get_session
 from app.core.database import AsyncSessionLocal
 from app.models.agent import AgentDefinition, AgentRun
-from app.schemas.agent import AgentRunCreate, AgentRunOut
+from app.schemas.agent import AgentRunCreate, AgentRunOut, AgentRunSummary
 from app.services.execution import execute_agent
 
 router = APIRouter()
+
+
+@router.get("", response_model=list[AgentRunSummary])
+@router.get("/", response_model=list[AgentRunSummary])
+async def list_runs(
+    agent_id: UUID | None = None,
+    status: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+    session: AsyncSession = Depends(get_session),
+) -> list[AgentRun]:
+    limit = max(1, min(limit, 200))
+    stmt = select(AgentRun).order_by(AgentRun.started_at.desc())
+    if agent_id is not None:
+        stmt = stmt.where(AgentRun.agent_id == agent_id)
+    if status is not None:
+        stmt = stmt.where(AgentRun.status == status)
+    stmt = stmt.limit(limit).offset(offset)
+    result = await session.execute(stmt)
+    return list(result.scalars().all())
 
 
 async def run_in_background(run_id: UUID, agent_id: UUID) -> None:

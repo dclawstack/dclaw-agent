@@ -96,6 +96,31 @@ export async function getRun(id: string): Promise<AgentRun> {
   return fetchJson<AgentRun>(`/api/v1/agent/runs/${id}`);
 }
 
+export type AgentRunSummary = {
+  id: string;
+  agent_id: string;
+  status: "pending" | "running" | "completed" | "failed" | "cancelled";
+  started_at: string;
+  completed_at?: string;
+  duration_ms?: number;
+  step_count: number;
+};
+
+export async function listRuns(params?: {
+  agent_id?: string;
+  status?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<AgentRunSummary[]> {
+  const qs = new URLSearchParams();
+  if (params?.agent_id) qs.set("agent_id", params.agent_id);
+  if (params?.status) qs.set("status", params.status);
+  if (params?.limit != null) qs.set("limit", String(params.limit));
+  if (params?.offset != null) qs.set("offset", String(params.offset));
+  const q = qs.toString();
+  return fetchJson<AgentRunSummary[]>(`/api/v1/agent/runs${q ? `?${q}` : ""}`);
+}
+
 export async function listMarketplace(): Promise<
   { id: string; name: string; description?: string; owner_name: string; install_count: number }[]
 > {
